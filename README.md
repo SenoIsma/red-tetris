@@ -46,20 +46,29 @@ Le jeu sera accessible sur http://localhost:5173
 
 console : ``Server started on port 3000``
 
-### Étape 1.2 : Classes de base (OOP avec prototypes)
+### Étape 1.2 : Classes de base (OOP avec prototypes) ✅
 
 - Créer backend/src/models/Player.js (classe avec prototype)
 - Créer backend/src/models/Piece.js (classe avec prototype)
 - Créer backend/src/models/Game.js (classe avec prototype)
 - Rappel : Server = OOP avec prototypes obligatoire
 
-### Étape 1.3 : Gestion des pièces Tetris
+### Étape 1.3 : Gestion des pièces Tetris ✅
 
 - Définir les 7 types de Tetriminos (I, O, T, S, Z, J, L)
 - Implémenter les 4 rotations pour chaque pièce
 - Créer un générateur de pièces aléatoires
 - Important : Même séquence pour tous les joueurs d'une partie
 
+Piece I avec toutes les rotations:
+```javascript
+    I:             
+      [[0,1], [1,1], [2,1], [3,1]]  
+      [[2,0], [2,1], [2,2], [2,3]]
+      [[0,2], [1,2], [2,2], [3,2]]
+      [[1,0], [1,1], [1,2], [1,3]]   
+```
+    
 ### Étape 1.4 : Gestion des rooms/games
 
 - Créer un Game Manager (gérer plusieurs parties simultanées)
