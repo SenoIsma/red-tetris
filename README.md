@@ -37,12 +37,14 @@ Le jeu sera accessible sur http://localhost:5173
 
 ## Phase 1 : Backend - Fondations (Server Node.js)
 
-### Étape 1.1 : Structure de base du serveur
+### Étape 1.1 : Structure de base du serveur ✅
 
 - Créer backend/src/index.js
 - Setup Express pour servir les fichiers statiques
 - Setup Socket.io sur le serveur
 - Tester la connexion avec un console.log
+
+console : ``Server started on port 3000``
 
 ### Étape 1.2 : Classes de base (OOP avec prototypes)
 
