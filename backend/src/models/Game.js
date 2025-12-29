@@ -27,13 +27,14 @@ class Game {
         return true;
     }
 
-    removePlayer(player){
-        const p = this.players.findIndex(p => p.id === player.id)
-        if (p !== -1){
-            if (this.host === player && this.players.length > 1)
-                this.host = this.players[1]
-            this.players.splice(p, 1)
-            if (this.players.length === 0)
+    removePlayer(playerOrId) {
+        const playerId = typeof playerOrId === 'string' ? playerOrId : playerOrId.id;
+        const index = this.players.findIndex(p => p.id === playerId);
+        if (index !== -1) {
+            if (this.host?.id === playerId && this.players.length > 1)
+                this.host = this.players[index === 0 ? 1 : 0];
+            this.players.splice(index, 1);
+            if (this.players.length === 0) 
                 this.reset();
         }
     }

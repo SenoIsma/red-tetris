@@ -69,7 +69,7 @@ Piece I avec toutes les rotations:
       [[1,0], [1,1], [1,2], [1,3]]   
 ```
     
-### Étape 1.4 : Gestion des rooms/games
+### Étape 1.4 : Gestion des rooms/games ✅
 
 - Créer un Game Manager (gérer plusieurs parties simultanées)
 - Implémenter la création d'une room
@@ -78,7 +78,7 @@ Piece I avec toutes les rotations:
 
 ### Étape 1.5 : Socket.io - Événements serveur
 
-- Événement : player:join (joueur rejoint)
+- Événement : player:join (joueur rejoint) ✅
 - Événement : game:start (hôte démarre)
 - Événement : piece:next (distribuer la pièce suivante)
 - Événement : player:update (mouvement pièce)
