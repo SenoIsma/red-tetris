@@ -88,14 +88,14 @@ Piece I avec toutes les rotations:
 
 ## Phase 2 : Frontend - Fondations (Client React)
 
-### Étape 2.1 : Structure React de base
+### Étape 2.1 : Structure React de base ✅
 
 - Nettoyer le template Vite (supprimer le code exemple)
 - Créer src/App.jsx (composant principal)
 - Créer src/pages/Home.jsx (page d'accueil)
 - Créer src/pages/Game.jsx (page de jeu)
 
-### Étape 2.2 : Routing et URL
+### Étape 2.2 : Routing et URL ✅
 
 - Installer react-router-dom
 - Setup du router : /#<room>/<player_name>
