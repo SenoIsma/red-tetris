@@ -119,7 +119,7 @@ Piece I avec toutes les rotations:
 
 ## Phase 3 : Logique du jeu Tetris (Pure Functions)
 
-### Étape 3.1 : Logique de la grille
+### Étape 3.1 : Logique de la grille ✅
 
 - Créer src/utils/board.js (fonctions pures)
 - Fonction : createEmptyBoard() (grille 10×20)
