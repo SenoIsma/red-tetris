@@ -1,18 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { inputProtection } from "../protection";
+import { useDispatch } from "react-redux";
+import { setPlayerName } from "../store/slices/playerSlice";
+import { setRoomName } from "../store/slices/gameSlice";
 
 
 function Home(){
   const [player, setPlayer] = useState("")
-  const [roomName, setRoomName] = useState("")
+  const [roomName, setRoom] = useState("")
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!inputProtection(player, roomName, (msg) => alert(msg)))
       return;
 
+    dispatch(setRoomName(roomName));
+    dispatch(setPlayerName(player));
     navigate(`/game/${roomName}/${player}`);
   }
 
@@ -33,7 +39,7 @@ function Home(){
           type="text" 
           placeholder="nom de la room" 
           value={roomName} 
-          onChange={(e) => setRoomName(e.target.value)}
+          onChange={(e) => setRoom(e.target.value)}
           /><br/><br/>
 
         <button type="submit">Rejoindre</button>

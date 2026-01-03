@@ -102,7 +102,7 @@ Piece I avec toutes les rotations:
 - Parser l'URL pour extraire room et player name
 - Rediriger vers Home si URL invalide
 
-### Étape 2.3 : Redux Store (state management)
+### Étape 2.3 : Redux Store (state management) ✅
 
 - Setup Redux Toolkit store
 - Créer slice gameSlice (état de la partie)
@@ -110,7 +110,7 @@ Piece I avec toutes les rotations:
 - Créer slice boardSlice (grille de jeu)
 - Rappel : Client = Programmation fonctionnelle, PAS de this
 
-### Étape 2.4 : Socket.io Client
+### Étape 2.4 : Socket.io Client ✅
 
 - Créer src/services/socket.js
 - Connecter au serveur backend
