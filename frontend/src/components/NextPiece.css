@@ -1,0 +1,29 @@
+.next-piece-container {
+  padding: 20px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  margin-left: 20px;
+}
+
+.next-piece-container h3 {
+  color: white;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.next-piece-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.next-piece-row {
+  display: flex;
+  gap: 2px;
+}
+
+.next-piece-cell {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #333;
+}

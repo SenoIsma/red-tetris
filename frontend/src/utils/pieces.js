@@ -1,4 +1,4 @@
-const SHAPES = {
+export const SHAPES = {
     I:[
       [[0,1], [1,1], [2,1], [3,1]],
       [[2,0], [2,1], [2,2], [2,3]],
@@ -43,32 +43,39 @@ const SHAPES = {
     ]
 }
 
-const COLORS = {
+export const COLORS = {
     I: 'cyan',
     O: 'yellow',
     T: 'purple',
     S: 'green',
     Z: 'red',
     J: 'blue',
-    L: 'orange'
+    L: 'orange',
+    PENALTY: 'gray'
 };
 
-class Piece{
-    constructor(type, x=3, y=0){
-        this.type = type;
-        this.x = x;
-        this.y = y;
-        this.rotation = 0;
-        this.color = COLORS[type];
-    }
+export const getPieceColor = (type) => {
+    return COLORS[type];
+};
 
-    getShape(){
-        return SHAPES[this.type][this.rotation]
-    }
+export const getShape = (piece) => {
+    return SHAPES[piece.type][piece.rotation];
+};
 
-    rotate(){
-        this.rotation = (this.rotation + 1) % 4
+export const rotatePiece = (piece) => {
+    return {
+        ...piece,
+        rotation: (piece.rotation + 1) % 4
     }
+};
+
+export const generateRandomPiece = () => {
+  const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+  const index = Math.floor(Math.random() * types.length);
+  return ({
+    type: types[index],
+    rotation: 0,
+    x: 3,
+    y: 0
+  });
 }
-
-export default Piece;

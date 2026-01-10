@@ -5,6 +5,8 @@ class Player{
         this.id = id;
         this.isAlive = true;
         this.linesCleared = 0;
+        this.currentPieceIndex = 0;
+        this.PenaltyLines = 0;
     }
 
     lose(){
@@ -13,6 +15,10 @@ class Player{
 
     clearLines(count){
         this.linesCleared += count;
+    }
+
+    addPenaltyLines(count){
+        this.PenaltyLines += count;
     }
 }
 

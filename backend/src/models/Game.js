@@ -6,7 +6,7 @@ class Game {
         this.players = [];
         this.state = 'waiting';
         this.pieceSequence = [];
-        this.currentPieceIndex = 0;
+        this.maxPieceIndex = 0;
         this.host = null;
     }
 
@@ -44,7 +44,7 @@ class Game {
             return false
         this.state = 'playing';
         this.generatePieceSequence(100)
-        this.currentPieceIndex = 0;
+        this.maxPieceIndex = 0;
         return true;
     }
 
@@ -63,12 +63,22 @@ class Game {
         }
     }
 
-    getNextPiece(){
-        if (this.currentPieceIndex >= this.pieceSequence.length)
+    getNextPiece(player){
+        if (this.maxPieceIndex >= this.pieceSequence.length)
             this.generatePieceSequence(50);
-        let piece = this.pieceSequence[this.currentPieceIndex];
-        this.currentPieceIndex++;
+        let piece = this.pieceSequence[player.currentPieceIndex];
+        player.currentPieceIndex++;
+        if (player.currentPieceIndex >= this.maxPieceIndex)
+            this.maxPieceIndex = player.currentPieceIndex
         return piece
+    }
+
+    getPlayer(id){
+        for (const player of this.players){
+            if (player.id === id)
+                return player
+        }
+        return null;
     }
 
     checkWinner() {

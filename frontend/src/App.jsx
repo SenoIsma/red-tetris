@@ -1,6 +1,6 @@
-import './App.css'
-import Home from './pages/Home.jsx'
-import Game from './pages/Game.jsx'
+import './App.css';
+import Home from './pages/Home.jsx';
+import Game from './pages/Game.jsx';
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom'
 
 function App() {

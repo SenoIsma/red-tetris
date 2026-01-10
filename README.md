@@ -2,326 +2,298 @@
 
 Projet pédagogique Full Stack JavaScript : un Tetris multijoueur en réseau utilisant React, Redux, Node.js et Socket.io.
 
-## 📋 Prérequis
-
-- Node.js >= 18.x
-- npm >= 9.x
-- Navigateur moderne (Chrome, Firefox, Edge)
-
-## 🚀 Installation
-
-```bash
-# Installer les dépendances backend
-cd backend
-npm install
-
-# Installer les dépendances frontend
-cd ../frontend
-npm install
-```
-
-## 🎮 Lancement du projet
-```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend
-cd frontend
-npm run dev
-```
-
-Le jeu sera accessible sur http://localhost:5173
-
-#📚 Plan de développement - Étape par étape
-
-## Phase 1 : Backend - Fondations (Server Node.js)
-
-### Étape 1.1 : Structure de base du serveur ✅
-
-- Créer backend/src/index.js
-- Setup Express pour servir les fichiers statiques
-- Setup Socket.io sur le serveur
-- Tester la connexion avec un console.log
-
-console : ``Server started on port 3000``
-
-### Étape 1.2 : Classes de base (OOP avec prototypes) ✅
-
-- Créer backend/src/models/Player.js (classe avec prototype)
-- Créer backend/src/models/Piece.js (classe avec prototype)
-- Créer backend/src/models/Game.js (classe avec prototype)
-- Rappel : Server = OOP avec prototypes obligatoire
-
-### Étape 1.3 : Gestion des pièces Tetris ✅
-
-- Définir les 7 types de Tetriminos (I, O, T, S, Z, J, L)
-- Implémenter les 4 rotations pour chaque pièce
-- Créer un générateur de pièces aléatoires
-- Important : Même séquence pour tous les joueurs d'une partie
-
-Piece I avec toutes les rotations:
-```javascript
-    I:             
-      [[0,1], [1,1], [2,1], [3,1]]  
-      [[2,0], [2,1], [2,2], [2,3]]
-      [[0,2], [1,2], [2,2], [3,2]]
-      [[1,0], [1,1], [1,2], [1,3]]   
-```
-    
-### Étape 1.4 : Gestion des rooms/games ✅
-
-- Créer un Game Manager (gérer plusieurs parties simultanées)
-- Implémenter la création d'une room
-- Implémenter la jointure d'une room
-- Gérer le rôle d'hôte (premier joueur)
-
-### Étape 1.5 : Socket.io - Événements serveur
-
-- Événement : player:join (joueur rejoint) ✅
-- Événement : game:start (hôte démarre)
-- Événement : piece:next (distribuer la pièce suivante)
-- Événement : player:update (mouvement pièce)
-- Événement : player:line-clear (lignes complétées)
-- Événement : player:lose (joueur éliminé)
-- Événement : game:end (fin de partie)
-
-## Phase 2 : Frontend - Fondations (Client React)
-
-### Étape 2.1 : Structure React de base ✅
-
-- Nettoyer le template Vite (supprimer le code exemple)
-- Créer src/App.jsx (composant principal)
-- Créer src/pages/Home.jsx (page d'accueil)
-- Créer src/pages/Game.jsx (page de jeu)
-
-### Étape 2.2 : Routing et URL ✅
-
-- Installer react-router-dom
-- Setup du router : /#<room>/<player_name>
-- Parser l'URL pour extraire room et player name
-- Rediriger vers Home si URL invalide
-
-### Étape 2.3 : Redux Store (state management) ✅
-
-- Setup Redux Toolkit store
-- Créer slice gameSlice (état de la partie)
-- Créer slice playerSlice (état du joueur local)
-- Créer slice boardSlice (grille de jeu)
-- Rappel : Client = Programmation fonctionnelle, PAS de this
-
-### Étape 2.4 : Socket.io Client ✅
-
-- Créer src/services/socket.js
-- Connecter au serveur backend
-- Créer les listeners pour les événements serveur
-- Dispatcher les actions Redux depuis les événements socket
-
-## Phase 3 : Logique du jeu Tetris (Pure Functions)
-
-### Étape 3.1 : Logique de la grille ✅
-
-- Créer src/utils/board.js (fonctions pures)
-- Fonction : createEmptyBoard() (grille 10×20)
-- Fonction : canPlacePiece(board, piece, x, y) (collision)
-- Fonction : placePiece(board, piece, x, y) (figer la pièce)
-- Fonction : clearLines(board) (supprimer lignes complètes)
-- IMPORTANT : Pure functions uniquement (pas de side effects)
-
-### Étape 3.2 : Logique des pièces
-
-- Créer src/utils/pieces.js (fonctions pures)
-- Fonction : rotatePiece(piece) (rotation horaire)
-- Fonction : movePiece(piece, dx, dy) (déplacement)
-- Fonction : getPieceColor(type) (couleur par type)
-
-### Étape 3.3 : Logique de mouvement
-
-- Fonction : moveLeft() (tester collision)
-- Fonction : moveRight() (tester collision)
-- Fonction : softDrop() (descente accélérée)
-- Fonction : hardDrop() (chute instantanée)
-- Fonction : rotate() (rotation avec validation)
-
-### Étape 3.4 : Game loop
-
-- Setup setInterval pour la chute automatique
-- Implémenter la "grace frame" (pièce devient fixe au prochain frame)
-- Gérer la vitesse de chute constante
-
-## Phase 4 : Interface utilisateur (React Components)
-
-### Étape 4.1 : Composant Board (Grille de jeu)
-
-- Créer src/components/Board.jsx
-- Afficher la grille 10×20 avec Grid/Flexbox CSS
-- Afficher les blocs fixés
-- Afficher la pièce actuelle en mouvement
-- Rappel : PAS de Canvas/SVG/Table, uniquement HTML/CSS
-
-### Étape 4.2 : Composant Controls
-
-- Gérer les touches clavier (Arrows, Space)
-- Mapper les touches aux actions Redux
-- Afficher les instructions à l'écran
-
-### Étape 4.3 : Composant Spectrum
-
-- Créer src/components/Spectrum.jsx
-- Afficher la hauteur de chaque colonne (mini vue)
-- Mettre à jour en temps réel
-
-### Étape 4.4 : Composant Player List
-
-- Afficher la liste des joueurs dans la room
-- Afficher leur spectrum
-- Indiquer qui est l'hôte
-- Indiquer qui a perdu (game over)
-
-### Étape 4.5 : Composant Lobby
-
-- Page d'attente avant le start
-- Bouton "Start" (uniquement pour l'hôte)
-- Liste des joueurs connectés
-
-## Phase 5 : Fonctionnalités multijoueur
-
-### Étape 5.1 : Synchronisation des pièces
-
-- Vérifier que tous les joueurs reçoivent la même séquence
-- Même position initiale (même coordonnées X,Y)
-- Tester avec 2 navigateurs en parallèle
-
-### Étape 5.2 : Lignes de pénalité
-
-- Détecter quand un joueur clear n lignes
-- Envoyer n-1 lignes de pénalité aux adversaires
-- Ajouter les lignes indestructibles en bas de grille
-- Décaler la grille vers le haut
-
-### Étape 5.3 : Gestion de la victoire/défaite
-
-- Détecter le game over (pièce ne peut plus entrer)
-- Notifier le serveur
-- Continuer à afficher le spectrum (spectateur)
-- Détecter le dernier joueur restant = vainqueur
-
-### Étape 5.4 : Restart et host transfer
-
-- Bouton "Restart" pour l'hôte
-- Si l'hôte part, transférer le rôle à un autre joueur
-- Bloquer les nouveaux joueurs pendant une partie
-
-## Phase 6 : Tests (Coverage minimum requis)
-
-### Étape 6.1 : Setup des tests
-
-- Installer Vitest (test runner)
-- Configurer coverage avec c8 ou vitest coverage
-- Créer frontend/src/__tests__/ et backend/src/__tests__/
-
-### Étape 6.2 : Tests des pure functions
-
-- Tester createEmptyBoard()
-- Tester canPlacePiece()
-- Tester placePiece()
-- Tester clearLines()
-- Tester rotatePiece()
-
-### Étape 6.3 : Tests des classes serveur
-
-- Tester Player (constructor, méthodes)
-- Tester Piece (rotations, positions)
-- Tester Game (start, join, end)
-
-### Étape 6.4 : Tests React (composants)
-
-- Installer @testing-library/react
-- Tester Board rendering
-- Tester Controls (keyboard events)
-- Tester Spectrum
-
-### Étape 6.5 : Vérifier le coverage
-
-- Lancer npm run coverage
-- Vérifier : Statements ≥70%
-- Vérifier : Functions ≥70%
-- Vérifier : Lines ≥70%
-- Vérifier : Branches ≥50%
-- Ajouter des tests si coverage insuffisant
-
-## Phase 7 : Polish et Production
-
-### Étape 7.1 : CSS et UI
-
-- Styliser le board (couleurs des Tetriminos)
-- Styliser le lobby
-- Styliser les spectres des autres joueurs
-- Rendre responsive (mobile optional)
-
-### Étape 7.2 : Gestion d'erreurs
-
-- Gérer la déconnexion socket
-- Gérer les rooms pleines
-- Gérer les noms de joueurs en doublon
-- Afficher des messages d'erreur clairs
-
-### Étape 7.3 : Build de production
-
-- Build frontend : npm run build (dans frontend/)
-- Configurer backend pour servir le frontend build
-- Tester en mode production
-
-### Étape 7.4 : Documentation finale
-
-- Ajouter les instructions de lancement dans README
-- Documenter le protocole socket (événements)
-- Ajouter des captures d'écran
-
-## Phase 8 : Bonus (optionnel)
-
-- Système de score
-- Persistance des scores (DB)
-- Mode "pièces invisibles"
-- Mode "gravité augmentée"
-- Leaderboard
-
-# 🔍 Critères de validation
-
-## Contraintes techniques
-
-- Full Stack JavaScript
-- Client : Programmation fonctionnelle (PAS de this)
-- Server : OOP avec prototypes (classes Player, Piece, Game)
-- Pure functions pour la logique de jeu
-- Pas de jQuery/Canvas/SVG/Table
-- Layout Grid/Flexbox
-- SPA (Single Page Application)
-- Socket.io pour la communication
-
-## Contraintes fonctionnelles
-
-- Grille 10×20
-- 7 Tetriminos avec rotations
-- Même séquence de pièces pour tous les joueurs
-- Lignes de pénalité (n-1)
-- Spectrum temps réel
-- URL : http://server:port/<room>/<player>
-- Premier joueur = hôte
-- Solo et multiplayer
-
-## Tests
-
-- Coverage ≥ 70% (statements, functions, lines)
-- Coverage ≥ 50% (branches)
-
-
-
-# 📚 Ressources
-
-- https://tetris.wiki/
-- https://socket.io/docs/
-- https://redux-toolkit.js.org/
-- https://react.dev/
+## 🚧 Ce qu'il reste à faire
+
+### Phase 1 : Compléter le jeu en solo
+
+#### 1.1 - Game Over Detection
+- [X] Détecter quand une nouvelle pièce ne peut pas entrer (y=0 et collision)
+- [X] Arrêter le game loop
+- [X] Afficher "Game Over" à l'écran
+- [X] Permettre de restart (nouvelle partie)
+
+#### 1.2 - Next Piece Preview
+- [X] Créer un composant `NextPiece.jsx`
+- [X] Afficher la prochaine pièce à côté du board
+- [X] Stocker `nextPiece` dans le state
+
+#### 1.3 - Spectrum View
+- [ ] Créer un composant `Spectrum.jsx`
+- [ ] Calculer la hauteur de chaque colonne (fonction pure)
+- [ ] Afficher une mini-vue (10 colonnes en barres verticales)
+- [ ] Mettre à jour en temps réel
 
 ---
+
+### Phase 2 : Lobby et démarrage de partie
+
+#### 2.1 - Page Lobby (avant le start)
+- [X] Créer un état `gameStatus` dans Redux : `'waiting'` | `'playing'` | `'finished'`
+- [X] Afficher un bouton "Start Game" **uniquement pour le host**
+- [X] Liste des joueurs en attente
+- [X] Désactiver les entrées de nouveaux joueurs une fois la partie démarrée
+
+#### 2.2 - Backend : Événement `game:start`
+- [X] Créer l'événement `game:start` dans `backend/src/index.js`
+- [X] Vérifier que l'émetteur est bien le host
+- [X] Changer le status de la game en `'playing'`
+- [X] Émettre `game:status-update` à tous les clients de la room
+
+#### 2.3 - Frontend : Réception `game:start`
+- [ ] Écouter `game:status-update` dans `Game.jsx`
+- [ ] Dispatcher `setGameStatus('playing')` dans Redux
+- [ ] Afficher le Board uniquement si `gameStatus === 'playing'`
+
+---
+
+### Phase 3 : Synchronisation multiplayer
+
+#### 3.1 - Distribution des pièces par le serveur
+**Important** : Tous les joueurs doivent recevoir la **même séquence de pièces** aux **mêmes coordonnées**.
+
+**Backend :**
+- [ ] Créer événement `piece:request` (client demande la prochaine pièce)
+- [ ] Répondre avec `piece:next` contenant `{ type, x, y, rotation }`
+- [ ] Utiliser `Game.pieceSequence` et `Game.currentPieceIndex`
+- [ ] Incrémenter l'index à chaque distribution
+
+**Frontend :**
+- [ ] Supprimer `generateRandomPiece()` du Board
+- [ ] Demander la pièce au serveur via `socket.emit('piece:request')`
+- [ ] Recevoir la pièce via `socket.on('piece:next', (piece) => ...)`
+- [ ] Utiliser cette pièce dans le state
+
+#### 3.2 - Envoi du spectrum en temps réel
+**Backend :**
+- [ ] Créer événement `player:spectrum-update`
+- [ ] Stocker le spectrum du joueur dans `Player.spectrum`
+- [ ] Émettre à tous les joueurs de la room : `game:spectrums-update`
+
+**Frontend :**
+- [ ] Calculer le spectrum du board actuel (fonction pure)
+- [ ] Envoyer `socket.emit('player:spectrum-update', spectrum)` après chaque lock
+- [ ] Écouter `game:spectrums-update` et l'afficher
+
+#### 3.3 - Affichage des spectres des adversaires
+- [ ] Créer composant `OpponentSpectrum.jsx`
+- [ ] Afficher un spectrum miniature pour chaque adversaire
+- [ ] Indiquer le nom du joueur
+- [ ] Mettre à jour en temps réel
+
+---
+
+### Phase 4 : Lignes de pénalité
+
+#### 4.1 - Détection de clear lines
+- [ ] Après `clearLines()`, compter le nombre de lignes supprimées
+- [ ] Envoyer au serveur : `socket.emit('player:line-clear', { count })`
+
+#### 4.2 - Backend : Distribution des pénalités
+- [ ] Événement `player:line-clear`
+- [ ] Calculer pénalité : `n - 1` lignes (si n lignes clearées)
+- [ ] Émettre `game:penalty-lines` aux **adversaires** (pas à l'émetteur)
+
+#### 4.3 - Frontend : Réception des pénalités
+- [ ] Écouter `game:penalty-lines`
+- [ ] Créer fonction `addPenaltyLines(board, count)` dans `board.js`
+- [ ] Ajouter `count` lignes indestructibles en bas du board
+- [ ] Décaler tout le board vers le haut
+
+---
+
+### Phase 5 : Win/Lose et fin de partie
+
+#### 5.1 - Événement `player:lose`
+**Frontend :**
+- [ ] Détecter le game over local
+- [ ] Envoyer `socket.emit('player:lose')`
+- [ ] Arrêter le game loop
+- [ ] Continuer à afficher le board (mode spectateur)
+
+**Backend :**
+- [ ] Événement `player:lose`
+- [ ] Marquer `player.isAlive = false`
+- [ ] Émettre `game:player-lost` à tous
+- [ ] Vérifier s'il reste 1 seul joueur vivant
+- [ ] Si oui, émettre `game:end` avec le vainqueur
+
+#### 5.2 - Affichage de la fin de partie
+- [ ] Écouter `game:player-lost` et mettre à jour la liste des joueurs (barré/grisé)
+- [ ] Écouter `game:end` et afficher "Winner: <name>"
+- [ ] Bouton "Restart" pour le host
+
+#### 5.3 - Restart
+**Backend :**
+- [ ] Événement `game:restart` (réservé au host)
+- [ ] Réinitialiser la game (reset pieceSequence, players)
+- [ ] Émettre `game:status-update` avec status `'waiting'`
+
+**Frontend :**
+- [ ] Bouton "Restart" pour le host
+- [ ] Réinitialiser le board, les states
+- [ ] Retour au lobby
+
+---
+
+### Phase 6 : Tests (Coverage minimum requis)
+
+**Requis du projet :**
+- Statements : ≥ 70%
+- Functions : ≥ 70%
+- Lines : ≥ 70%
+- Branches : ≥ 50%
+
+#### 6.1 - Tests des pure functions (Frontend)
+- [ ] Tester `createEmptyBoard()`
+- [ ] Tester `canPlacePiece()` (collisions murs, sol, autres pièces)
+- [ ] Tester `placePiece()`
+- [ ] Tester `clearLines()` (0, 1, 2, 3, 4 lignes)
+- [ ] Tester `rotatePiece()`
+- [ ] Tester `moveLeft()`, `moveRight()`, `moveDown()`
+- [ ] Tester `hardDrop()`
+
+#### 6.2 - Tests des classes serveur (Backend)
+- [ ] Tester `Player` (constructor, méthodes)
+- [ ] Tester `Piece` (rotations, formes)
+- [ ] Tester `Game` (start, join, pieceSequence)
+- [ ] Tester `GameManager` (createGame, getGame, deleteGame)
+
+#### 6.3 - Tests des composants React
+- [ ] Installer `@testing-library/react`
+- [ ] Tester `Board` rendering
+- [ ] Tester keyboard events
+
+#### 6.4 - Vérifier le coverage
+```bash
+# Frontend
+cd frontend
+npm run coverage
+
+# Backend
+cd backend
+npm run coverage
+```
+
+---
+
+### Phase 7 : Polish et Production
+
+#### 7.1 - CSS et UI
+- [ ] Améliorer le design du board (ombres, bordures)
+- [ ] Styliser le lobby
+- [ ] Animations de clear lines
+- [ ] Responsive design (optional)
+
+#### 7.2 - Gestion d'erreurs
+- [ ] Gérer la déconnexion socket (reconnexion ?)
+- [ ] Gérer les noms de joueurs en doublon
+- [ ] Messages d'erreur clairs
+- [ ] Validation des inputs
+
+#### 7.3 - Build de production
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Le backend doit servir le build
+# Configurer backend/src/index.js pour servir frontend/dist
+```
+
+#### 7.4 - Documentation finale
+- [ ] Instructions de lancement
+- [ ] Protocole socket (événements)
+- [ ] Captures d'écran
+
+---
+
+## 🎯 Priorités pour les prochaines sessions
+
+### Session 1 : Game Over + Next Piece
+1. Détecter game over (pièce ne peut pas spawn)
+2. Afficher "Game Over"
+3. Créer composant NextPiece
+
+### Session 2 : Lobby et Start Game
+1. État gameStatus dans Redux
+2. Backend : événement `game:start`
+3. Bouton "Start" pour le host
+4. Cacher le Board avant le start
+
+### Session 3 : Synchronisation des pièces
+1. Backend : `piece:request` et `piece:next`
+2. Frontend : demander pièces au serveur
+3. Tester avec 2 navigateurs
+
+### Session 4 : Spectrum
+1. Fonction `calculateSpectrum(board)`
+2. Composant Spectrum
+3. Envoi en temps réel
+
+### Session 5 : Pénalités
+1. Compter les lignes clearées
+2. Backend : distribution aux adversaires
+3. Frontend : `addPenaltyLines()`
+
+### Session 6 : Win/Lose
+1. Événement `player:lose`
+2. Détection du vainqueur
+3. Affichage de fin de partie
+
+### Session 7+ : Tests
+1. Tests pure functions (priorité absolue)
+2. Tests backend
+3. Coverage ≥ 70%
+
+---
+
+## 📚 Ressources
+
+- [Tetris Wiki](https://tetris.wiki/)
+- [Socket.io Documentation](https://socket.io/docs/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [React Documentation](https://react.dev/)
+
+---
+
+## 🔍 Contraintes techniques (rappel)
+
+### Client (Browser)
+- ✅ Programmation fonctionnelle (PAS de `this`)
+- ✅ Pure functions pour la logique de jeu
+- ✅ Framework moderne (React)
+- ✅ Single Page Application
+- ✅ Socket.io pour communication
+- ✅ Grid/Flexbox pour layouts
+- ❌ jQuery, Canvas, SVG, `<table>` interdits
+
+### Server (Node.js)
+- ✅ OOP avec prototypes
+- ✅ Classes minimum : Player, Piece, Game
+- ✅ Socket.io pour communication
+- ✅ Serve index.html et bundle.js
+
+### Règles du jeu
+- ✅ Grille 10×20
+- ✅ 7 Tetriminos avec rotations
+- ⏳ Même séquence de pièces pour tous (à implémenter)
+- ⏳ Lignes de pénalité (n-1) (à implémenter)
+- ⏳ Spectrum temps réel (à implémenter)
+- ✅ URL : `http://server:port/<room>/<player>`
+- ✅ Premier joueur = hôte
+- ✅ Solo et multiplayer
+
+---
+
+## 🐛 Bugs connus et corrigés
+
+### ✅ Bugs résolus
+- ✅ Rotation du J incorrecte (rotation 2 corrigée)
+- ✅ Duplication visuelle après hard drop (timeout retiré)
+- ✅ Changement de couleur pendant la chute (utilisation de `newPiece.type` au lieu de `currentPiece.type`)
+- ✅ Game loop se réinitialisait à chaque touche (utilisation de `useRef` avec dépendances vides)
+- ✅ Race condition pendant le lock (état `isLocked` ajouté)
+
+---
+
+**Bon courage pour la suite ! 🚀**

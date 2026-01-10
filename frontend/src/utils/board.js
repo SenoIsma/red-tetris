@@ -20,22 +20,30 @@ export const canPlacePiece = (board, piece, x, y) => {
     });
 };
 
-export const placePiece = (board, piece, x, y) => {
+export const placePiece = (board, piece, x, y, pieceType) => {
     const newBoard = board.map(n => [...n]);
 
     piece.forEach(bloc => {
         const absX = x + bloc[0];
         const absY = y + bloc[1];
-        newBoard[absY][absX] = 1;
+        newBoard[absY][absX] = pieceType;
     });
     return newBoard;
 };
 
 export const clearLines = (board) => {
-    const remainingLines = board.filter(line =>{
-        return (!line.every(n => n !== 0))
+    let linesCleared = 0;
+    const newBoard = board.filter(line => {
+        const isFull = line.every(cell => cell !== 0);
+        if (isFull) {
+            linesCleared++;
+            return false;
+        }
+        return true;
     });
-    const linesCleared = BOARD_HEIGHT - remainingLines.length;
-    const newLines = Array(linesCleared).fill(0).map(() => Array(BOARD_WIDTH).fill(0));
-    return [...newLines, ...remainingLines];
+    while (newBoard.length < 20) {
+        newBoard.unshift(Array(10).fill(0));
+    }
+
+    return { board: newBoard, linesCleared };
 };

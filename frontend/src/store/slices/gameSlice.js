@@ -7,7 +7,10 @@ const gameSlice = createSlice({
         players: [],
         hostId: null,
         gameStatus: 'waiting',
-        winner: null
+        winner: null,
+        currentPiece: null,
+        nextPiece: null,
+        pendingPenaltyLines : 0
     },
     reducers: {
         setRoomName: (state, action) =>{
@@ -24,10 +27,33 @@ const gameSlice = createSlice({
         },
         setWinner: (state, action) => {
             state.winner = action.payload;
-        }
+        },
+        setCurrentPiece: (state, action) => {
+            state.currentPiece = action.payload;
+        },
+        setNextPiece: (state, action) => {
+            state.nextPiece = action.payload;
+        },
+        addPenaltyLines: (state, action) => {
+            state.pendingPenaltyLines += action.payload;
+        },
+        clearPenaltyLines: (state) => {
+            state.pendingPenaltyLines = 0;
+        },
     }
 });
 
-export const {setRoomName, setPlayers, setHostId, setGameStatus, setWinner} = gameSlice.actions;
+export const {
+    setRoomName,
+    setPlayers, 
+    setHostId, 
+    setGameStatus, 
+    setWinner, 
+    setCurrentPiece, 
+    setNextPiece,
+    addPenaltyLines,
+    clearPenaltyLines
+} = gameSlice.actions;
+
 export default gameSlice.reducer;
 
