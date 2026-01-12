@@ -15,3 +15,4 @@ export function inputProtection(playerName, roomName, onError){
     }
     return true;
 }
+

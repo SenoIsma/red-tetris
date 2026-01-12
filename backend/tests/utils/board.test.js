@@ -6,7 +6,7 @@ import {
     placePiece,
     clearLines,
     calculateSpectrum
-} from '../src/utils/board.js';
+} from '../../src/utils/board.js';
 
 describe('board.js', () => {
 

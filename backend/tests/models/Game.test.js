@@ -1,5 +1,5 @@
-import Game from '../src/models/Game.js'
-import Player from '../src/models/Player.js'
+import Game from '../../src/models/Game.js'
+import Player from '../../src/models/Player.js'
 
 describe('Game', () => {
 

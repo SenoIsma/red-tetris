@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { inputProtection } from "../protection";
+import { inputProtection } from "../utils/protection";
 import { useDispatch } from "react-redux";
 import { setPlayerName } from "../store/slices/playerSlice";
 import { setRoomName } from "../store/slices/gameSlice";
-import socket from '../socket.js';
+import socket from '../utils/socket.js';
 
 import './Home.css';
 

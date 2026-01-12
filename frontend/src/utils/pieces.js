@@ -2,14 +2,14 @@ export const SHAPES = {
     I:[
       [[0,1], [1,1], [2,1], [3,1]],
       [[2,0], [2,1], [2,2], [2,3]],
-      [[0,2], [1,2], [2,2], [3,2]],  
-      [[1,0], [1,1], [1,2], [1,3]]   
+      [[0,2], [1,2], [2,2], [3,2]],
+      [[1,0], [1,1], [1,2], [1,3]]
     ],
     O:[
       [[1,0], [2,0], [1,1], [2,1]],
       [[1,0], [2,0], [1,1], [2,1]],
-      [[1,0], [2,0], [1,1], [2,1]],  
-      [[1,0], [2,0], [1,1], [2,1]] 
+      [[1,0], [2,0], [1,1], [2,1]],
+      [[1,0], [2,0], [1,1], [2,1]]
     ],
     J:[
       [[0,0], [0,1], [1,1], [2,1]],
@@ -61,21 +61,3 @@ export const getPieceColor = (type) => {
 export const getShape = (piece) => {
     return SHAPES[piece.type][piece.rotation];
 };
-
-export const rotatePiece = (piece) => {
-    return {
-        ...piece,
-        rotation: (piece.rotation + 1) % 4
-    }
-};
-
-export const generateRandomPiece = () => {
-  const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-  const index = Math.floor(Math.random() * types.length);
-  return ({
-    type: types[index],
-    rotation: 0,
-    x: 3,
-    y: 0
-  });
-}

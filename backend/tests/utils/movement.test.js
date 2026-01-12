@@ -1,5 +1,5 @@
-import { moveLeft, moveRight, moveDown, rotate, hardDrop } from '../src/utils/movement.js';
-import { createEmptyBoard } from '../src/utils/board.js';
+import { moveLeft, moveRight, moveDown, rotate, hardDrop } from '../../src/utils/movement.js';
+import { createEmptyBoard } from '../../src/utils/board.js';
 
 describe('movement.js', () => {
 

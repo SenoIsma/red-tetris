@@ -1,4 +1,4 @@
-import Piece from '../src/models/Piece';
+import Piece from '../../src/models/Piece';
 
 describe('Piece', () => {
 

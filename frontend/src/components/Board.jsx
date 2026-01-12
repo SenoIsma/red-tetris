@@ -1,17 +1,17 @@
-import { createEmptyBoard, placePiece } from "../utils/board";
+import { placePiece } from "../utils/board";
 import { getShape, getPieceColor } from "../utils/pieces";
 import './Board.css'
 import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { clearPenaltyLines } from "../store/slices/gameSlice.js";
-import socket from "../socket.js";
+import socket from "../utils/socket.js";
 
 
 const Board = ({ roomName, playerName }) => {
   const dispatch = useDispatch();
   const currentPiece = useSelector(state => state.game.currentPiece);
   const gameStatus = useSelector(state => state.game.gameStatus);
-  const [board, setBoard] = useState(createEmptyBoard());
+  const [board, setBoard] = useState(Array(20).fill(0).map(() => Array(10).fill(0)));
   const [isGameOver, setIsGameOver] = useState(false);
   const [playingPiece, setPlayingPiece] = useState(null);
 

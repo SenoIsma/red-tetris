@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import socket from '../socket.js'
-import { inputProtection } from "../protection.js";
+import socket from '../utils/socket.js'
+import { inputProtection } from "../utils/protection.js";
 import { useDispatch, useSelector } from "react-redux";
 import { setHostId, setPlayers, setGameStatus, setCurrentPiece, addPenaltyLines, setWinner } from "../store/slices/gameSlice.js";
 import Board from "../components/Board.jsx";

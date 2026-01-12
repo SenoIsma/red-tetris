@@ -1,4 +1,4 @@
-import { SHAPES, COLORS, getPieceColor, getShape, rotatePiece } from '../src/utils/pieces.js';
+import { SHAPES, COLORS, getPieceColor, getShape, rotatePiece } from '../../src/utils/pieces.js';
 
 describe('pieces.js', () => {
 

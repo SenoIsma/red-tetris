@@ -2,8 +2,13 @@ export default {
   // Use jsdom environment for React/browser tests
   testEnvironment: 'jsdom',
 
-  // Support ES modules
-  transform: {},
+  // Inject Jest globals (describe, test, expect, jest, etc.)
+  injectGlobals: true,
+
+  // Support ES modules and JSX transformation
+  transform: {
+    '^.+\\.(js|jsx)$': 'babel-jest',
+  },
 
   // Test file patterns
   testMatch: [
@@ -31,6 +36,8 @@ export default {
     '!src/**/*.test.{js,jsx}',
     '!src/**/*.spec.{js,jsx}',
     '!src/main.jsx',
+    '!src/utils/socket.js',
+    '!src/store/index.js',
     '!**/node_modules/**'
   ],
 

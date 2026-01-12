@@ -1,4 +1,4 @@
-import Player from '../src/models/Player.js';
+import Player from '../../src/models/Player.js';
 
 // describe() permet de grouper plusieurs tests ensemble
 describe('Player', () => {
