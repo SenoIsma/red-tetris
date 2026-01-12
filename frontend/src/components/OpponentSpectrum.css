@@ -1,0 +1,53 @@
+.opponent-spectrum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.opponent-spectrum.dead {
+  opacity: 0.5;
+}
+
+.opponent-spectrum.dead .mini-board {
+  border-color: #ef4444;
+}
+
+.opponent-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  text-align: center;
+}
+
+.mini-board {
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
+  border: 3px solid #666;
+  padding: 2px;
+  gap: 1px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.mini-row {
+  display: flex;
+  gap: 1px;
+}
+
+.mini-cell {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #444;
+  box-sizing: border-box;
+  transition: background-color 0.1s;
+  background-color: #111;
+}
+
+.loading {
+  padding: 20px 10px;
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+}

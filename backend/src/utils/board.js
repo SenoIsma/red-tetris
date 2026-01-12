@@ -9,7 +9,7 @@ export const canPlacePiece = (board, piece, x, y) => {
     return piece.every((bloc) => {
         const absX = x + bloc[0];
         const absY = y + bloc[1];
-    
+
         if (absX < 0 || absX >= BOARD_WIDTH)
             return false;
         if (absY < 0 || absY >= BOARD_HEIGHT)

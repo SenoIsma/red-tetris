@@ -23,7 +23,21 @@ const gameSlice = createSlice({
             state.hostId = action.payload;
         },
         setGameStatus: (state, action) => {
+            const previousStatus = state.gameStatus;
             state.gameStatus = action.payload;
+
+            if (previousStatus === 'waiting' && action.payload === 'playing') {
+                state.winner = null;
+                state.currentPiece = null;
+                state.nextPiece = null;
+                state.pendingPenaltyLines = 0;
+            }
+
+            if ((previousStatus === 'playing' || previousStatus === 'finished') && action.payload === 'waiting') {
+                state.currentPiece = null;
+                state.nextPiece = null;
+                state.pendingPenaltyLines = 0;
+            }
         },
         setWinner: (state, action) => {
             state.winner = action.payload;

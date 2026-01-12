@@ -1,0 +1,56 @@
+
+
+.form-container {
+  width: 300px;
+  border-radius: 0.2rem;
+  background-color: rgba(17, 24, 39, 1);
+  padding: 2rem;
+  color: rgba(243, 244, 246, 1);
+}
+
+.title {
+  text-align: center;
+  font-size: 3rem;
+  line-height: 1rem;
+  font-weight: 700;
+}
+
+
+.input-group {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.input-group label {
+  display: block;
+  color: rgba(156, 163, 175, 1);
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 80%;
+  border-radius: 0.1rem;
+  border: 1px solid rgba(55, 65, 81, 1);
+  outline: 0;
+  background-color: rgba(17, 24, 39, 1);
+  padding: 0.75rem 1rem;
+  color: rgba(243, 244, 246, 1);
+}
+
+.input-group input:focus {
+  border-color: rgba(167, 139, 250);
+}
+
+.sign {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 30px;
+  background-color: rgba(167, 139, 250, 1);
+  padding: 0.75rem;
+  color: rgba(17, 24, 39, 1);
+  border: none;
+  border-radius: 0.1rem;
+  font-weight: 600;
+}

@@ -3,19 +3,20 @@ import { Server } from 'socket.io';
 import express from 'express';
 
 import gameManager from './managers/GameManager.js';
-import Player from './models/Player.js'
+import Player from './models/Player.js';
 
 
 const app = express();
 const server = createServer(app)
 const io = new Server(server, {
     cors: {
-        origin: process.env.URL_FRONTEND,
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-const socketRooms = new Map(); //Map <socketId, roomName>
+const socketRooms = new Map();
+const disconnectTimers = new Map();
 
 const verifyGame = (socket, roomName) => {
     const game = gameManager.getGame(roomName)
@@ -28,23 +29,77 @@ const verifyGame = (socket, roomName) => {
 
 io.on("connection", socket => {
     console.log("Nouveau client connecté:", socket.id);
-    
-    
-    socket.on("player:join", ({ roomName, playerName }) => {
-        const game = gameManager.getOrCreateGame(roomName);
-        const player = new Player(socket.id, playerName);
-        const success = game.addPlayer(player);
-        if (!success){
-            socket.emit("error", {message: "Cannot join game"});
+
+    socket.on("player:check-username", ({ roomName, playerName }, callback) => {
+        const game = gameManager.getGame(roomName);
+
+        if (!game) {
+            callback({ available: true });
             return;
         }
+
+        const existingPlayer = game.players.find(p => p.name === playerName);
+        if (existingPlayer && existingPlayer.id !== socket.id) {
+            callback({ available: false, error: "Username already taken in this room" });
+            return;
+        }
+
+        if (game.state === 'playing') {
+            callback({ available: false, error: "Cannot join game: game already started" });
+            return;
+        }
+
+        if (game.players.length >= 4 && !existingPlayer) {
+            callback({ available: false, error: "Cannot join game: room is full (max 4 players)" });
+            return;
+        }
+
+        callback({ available: true });
+    });
+
+    socket.on("player:join", ({ roomName, playerName }) => {
+        const game = gameManager.getOrCreateGame(roomName);
+
+        const existingPlayer = game.players.find(p => p.name === playerName);
+        if (existingPlayer && existingPlayer.id !== socket.id) {
+            socket.emit("error", {message: "Username already taken in this room"});
+            return;
+        }
+
+        if (game.state === 'playing') {
+            socket.emit("error", {message: "Cannot join game: game already started"});
+            return;
+        }
+
+        if (game.players.length >= 4 && !existingPlayer) {
+            socket.emit("error", {message: "Cannot join game: room is full (max 4 players)"});
+            return;
+        }
+
+        if (existingPlayer) {
+            const oldSocketId = existingPlayer.id;
+            if (disconnectTimers.has(oldSocketId)) {
+                clearTimeout(disconnectTimers.get(oldSocketId));
+                disconnectTimers.delete(oldSocketId);
+                console.log(`Reconnection detected for ${playerName}, cancelling removal`);
+            }
+
+            const oldRoomName = socketRooms.get(oldSocketId);
+            if (oldRoomName) {
+                socketRooms.delete(oldSocketId);
+            }
+        }
+
+        const player = new Player(socket.id, playerName);
+        game.addPlayer(player);
+
         socket.join(roomName);
         socketRooms.set(socket.id, roomName);
-        
+
         io.to(roomName).emit("game:players-update", {
             players: game.players, host: game.host
         });
-        
+
         console.log(`${playerName} a rejoint ${roomName}`);
     });
 
@@ -68,91 +123,86 @@ io.on("connection", socket => {
         io.to(roomName).emit("game:status-update", {
             status: 'playing'
         });
+
         for (const player of game.players){
-            const piece = game.getNextPiece(player);
-            io.to(player.id).emit("piece:spawn", { piece });
+            io.to(roomName).emit("player:board-update", {
+                playerId: player.id,
+                playerName: player.name,
+                board: player.board
+            });
         }
+
+        for (const player of game.players){
+            game.spawnNextPiece(player, io);
+        }
+
+        game.startGameLoops(io);
 
         console.log(`Game started in room ${roomName}`);
     });
 
-
-    socket.on("piece:request", ({ roomName }) => {
-        const game = verifyGame(socket, roomName)
-        if (!game)
-            return;
-        const player = game.getPlayer(socket.id);
-        if (!player){
-            socket.emit("error", { message: "Player not found"});
-            return;
-        }
-        const piece = game.getNextPiece(player);
-        socket.emit("piece:spawn", { piece });
-    });
-
-
-    socket.on("piece:lock", ({roomName, piece, board, linesCleared}) => {
-        const game = verifyGame(socket, roomName)
-        if (!game)
-            return;
+    socket.on("input:action", ({ roomName, action }) => {
+        const game = verifyGame(socket, roomName);
+        if (!game) return;
 
         const player = game.getPlayer(socket.id);
         if (!player) {
-            socket.emit("error", {messsage: "Player not found"});
+            socket.emit("error", { message: "Player not found" });
             return;
         }
 
-        const expectedPiece = game.pieceSequence[player.currentPieceIndex - 1];
-        if (!expectedPiece || piece.type !== expectedPiece.type){
-            socket.emit("error", {message: "Invalid piece!"});
+        const validActions = ['left', 'right', 'down', 'rotate', 'hardDrop'];
+        if (!validActions.includes(action)) {
             return;
         }
 
-        if (linesCleared > 0){
-            player.clearLines(linesCleared);
-            const penalty = linesCleared - 1;
-            if (penalty > 0){
-                game.players.forEach(p => {
-                    if (p.id !== player.id && p.isAlive)
-                        io.to(p.id).emit("penalty:received", {lines: penalty });
-                });
-            }
-            io.to(roomName).emit("player:line-cleared", {
-                playerId: player.id,
-                playerName: player.name,
-                linesCleared : linesCleared,
-                totalLines: player.linesCleared
-            });
-        }
-
+        game.handlePlayerInput(player, action, io);
     });
-
 
     socket.on("player:lose", ({ roomName }) => {
         const game = gameManager.getGame(roomName);
         if (!game) return;
 
+        if (game.state !== 'playing') return;
+
         const player = game.getPlayer(socket.id);
         if (!player) return;
 
+        if (!player.isAlive) return;
+
         player.lose();
+        console.log(`Player ${player.name} lost in room ${roomName}`);
+
         io.to(roomName).emit("player:lost", {
             playerId: player.id,
             playerName: player.name
         });
+
         const winner = game.checkWinner();
         if (winner) {
+            console.log(`Winner detected: ${winner.name}`);
             io.to(roomName).emit("game:winner", {
-                winner: winner,
+                winner: {
+                    id: winner.id,
+                    name: winner.name,
+                    linesCleared: winner.linesCleared
+                },
                 status: 'finished'
             });
 
+            game.cleanup();
+
+            game.state = 'waiting';
             io.to(roomName).emit("game:status-update", {
-                status: 'finished'
+                status: 'waiting'
             });
         } else if (game.state === 'finished') {
+            console.log(`Game finished with no winner (tie)`);
+            game.cleanup();
+
+            game.state = 'waiting';
             io.to(roomName).emit("game:status-update", {
-                status: 'finished'
+                status: 'waiting'
             });
         }
     });
@@ -163,12 +213,64 @@ io.on("connection", socket => {
         if (!roomName) return;
         const game = gameManager.getGame(roomName);
         if (!game) return;
-        game.removePlayer(socket.id);
-        socketRooms.delete(socket.id);
 
-        io.to(roomName).emit("game:players-update", {
-            players: game.players, host: game.host
-        });
+        const player = game.getPlayer(socket.id);
+        if (!player) return;
+
+        player.cleanup();
+
+        if (game.state === 'playing') {
+            console.log(`Player ${player.name} disconnected during game - marked as lost`);
+            player.lose();
+
+            io.to(roomName).emit("player:lost", {
+                playerId: player.id,
+                playerName: player.name
+            });
+
+            const winner = game.checkWinner();
+            if (winner) {
+                io.to(roomName).emit("game:winner", {
+                    winner: {
+                        id: winner.id,
+                        name: winner.name,
+                        linesCleared: winner.linesCleared
+                    },
+                    status: 'finished'
+                });
+
+                game.cleanup();
+
+                game.state = 'waiting';
+                io.to(roomName).emit("game:status-update", {
+                    status: 'waiting'
+                });
+            } else if (game.state === 'finished') {
+                game.cleanup();
+
+                game.state = 'waiting';
+                io.to(roomName).emit("game:status-update", {
+                    status: 'waiting'
+                });
+            }
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            const playerCheck = game.getPlayer(socket.id);
+            if (!playerCheck) return;
+
+            console.log(`Removing player ${playerCheck.name} after disconnect timeout`);
+            game.removePlayer(socket.id);
+            socketRooms.delete(socket.id);
+            disconnectTimers.delete(socket.id);
+
+            io.to(roomName).emit("game:players-update", {
+                players: game.players, host: game.host
+            });
+        }, 5000);
+
+        disconnectTimers.set(socket.id, timer);
     });
 });
 

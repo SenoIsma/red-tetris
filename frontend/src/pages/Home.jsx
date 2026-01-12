@@ -4,6 +4,9 @@ import { inputProtection } from "../protection";
 import { useDispatch } from "react-redux";
 import { setPlayerName } from "../store/slices/playerSlice";
 import { setRoomName } from "../store/slices/gameSlice";
+import socket from '../socket.js';
+
+import './Home.css';
 
 
 function Home(){
@@ -17,32 +20,39 @@ function Home(){
     if (!inputProtection(player, roomName, (msg) => alert(msg)))
       return;
 
-    dispatch(setRoomName(roomName));
-    dispatch(setPlayerName(player));
-    navigate(`/game/${roomName}/${player}`);
+    socket.emit("player:check-username", { roomName, playerName: player }, (response) => {
+      if (!response.available) {
+        alert(response.error);
+        return;
+      }
+
+      dispatch(setRoomName(roomName));
+      dispatch(setPlayerName(player));
+      navigate(`/game/${roomName}/${player}`);
+    });
   }
 
   return(
-    <div>
-      <h1>Red Tetris</h1>
-      <h2>Bienvenue</h2>
-
-      <form onSubmit={handleSubmit}>
-        <input 
-          type="text" 
-          placeholder="pseudo" 
-          value={player} 
-          onChange={(e) => setPlayer(e.target.value)}
-          /><br/>
-
-        <input 
-          type="text" 
-          placeholder="nom de la room" 
-          value={roomName} 
-          onChange={(e) => setRoom(e.target.value)}
-          /><br/><br/>
-
-        <button type="submit">Rejoindre</button>
+    <div className="form-container">
+      <p className="title">Red Tetris</p>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="input-group">
+          <label htmlFor="username">Pseudo</label>
+          <input 
+            type="text" 
+            id="username" 
+            value={player} 
+            onChange={(e) => setPlayer(e.target.value)} />
+        </div>
+        <div className="input-group">
+          <label htmlFor="room">Room</label>
+          <input 
+            type="text" 
+            id="room" 
+            value={roomName} 
+            onChange={(e) => setRoom(e.target.value)} />
+        </div>
+        <button className="sign" type="submit">Rejoindre</button>
       </form>
 
     </div>

@@ -1,188 +1,188 @@
-import { createEmptyBoard, placePiece, clearLines, canPlacePiece } from "../utils/board";
+import { createEmptyBoard, placePiece } from "../utils/board";
 import { getShape, getPieceColor } from "../utils/pieces";
 import './Board.css'
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { hardDrop, moveDown, moveLeft, moveRight, rotate } from '../utils/movement.js'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { clearPenaltyLines } from "../store/slices/gameSlice.js";
 import socket from "../socket.js";
 
 
-const Board = ({ roomName }) => {
+const Board = ({ roomName, playerName }) => {
   const dispatch = useDispatch();
   const currentPiece = useSelector(state => state.game.currentPiece);
-  const pendingPenaltyLines = useSelector(state => state.game.pendingPenaltyLines);
+  const gameStatus = useSelector(state => state.game.gameStatus);
   const [board, setBoard] = useState(createEmptyBoard());
-  const boardRef = useRef(board);
-  const pieceRef = useRef(currentPiece);
-  const [isLocked, setIsLocked] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [playingPiece, setPlayingPiece] = useState(null);
-  
-
-  const lockIn = useCallback( (newPiece, bo) => {
-    const shape = getShape(newPiece);
-    const boardWithPiece = placePiece(bo, shape, newPiece.x, newPiece.y, newPiece.type);
-    const { board: boardAfterClear, linesCleared } = clearLines(boardWithPiece);
-    setBoard(boardAfterClear);
-    
-    socket.emit('piece:lock', {
-      roomName,
-      piece: newPiece,
-      board: boardAfterClear,
-      linesCleared: linesCleared,
-    })
-  }, [roomName]);
-
-  const spawnNewPiece = useCallback(() => {
-    console.log(`[Frontend] Demande piece:request`);
-    socket.emit('piece:request', { roomName });
-  }, [roomName]);
-
 
   useEffect(() => {
-    if (currentPiece){
-      console.log(`[Frontend] Nouvelle pièce reçue de Redux:`, currentPiece.type, currentPiece);
-      setPlayingPiece({ ...currentPiece })
-    }
-  }, [currentPiece]);
-  
-  
-  useEffect(() => {
-    boardRef.current = board;
-    if (playingPiece)
-      pieceRef.current = playingPiece;
-  }, [board, playingPiece]);
-  
-  
-  useEffect(() => {
-      if (!currentPiece) return;
-      const shape = getShape(currentPiece);
-      const canPlace = canPlacePiece(board, shape, currentPiece.x, currentPiece.y);
+    const handlePieceSpawn = ({ piece }) => {
+      console.log(`[Frontend] Nouvelle pièce reçue:`, piece.type);
+      setPlayingPiece({ ...piece });
+    };
 
-      if (!canPlace) {
-          setIsGameOver(true);
-          socket.emit('player:lose', { roomName });
+    const handlePieceUpdate = ({ playerId, piece }) => {
+      if (playerId === socket.id) {
+        setPlayingPiece(piece);
       }
-  }, [currentPiece, board, roomName]);
+    };
 
-  useEffect(() => {
-    if (isGameOver) return;
-    if (!playingPiece) return;
-    let timer;
-    const interval = setInterval(() => {
-      const newPiece = moveDown(boardRef.current, pieceRef.current);
-      if (newPiece === pieceRef.current){
-        setIsLocked(true);
-        lockIn(pieceRef.current, boardRef.current);
-        timer = setTimeout(() => {
-          spawnNewPiece();
-          setIsLocked(false);
-        }, 200);
-      }else
-        setPlayingPiece(newPiece);
-      }, 1000);
-      return () => {
-      clearInterval(interval);
-      if (timer) clearTimeout(timer);
-    }
-  }, [isGameOver, lockIn, spawnNewPiece, playingPiece]);
+    const handlePieceLocked = ({ board: newBoard, linesCleared }) => {
+      console.log(`[Frontend] Pièce verrouillée. Lignes clearées:`, linesCleared);
+      setBoard(newBoard);
+      setPlayingPiece(null);
+    };
 
-  useEffect(() => {
-      if (pendingPenaltyLines > 0) {
-          const penaltyLines = [];
-          for (let i = 0; i < pendingPenaltyLines; i++) {
-              const line = Array(10).fill('PENALTY');
-              const randomGap = Math.floor(Math.random() * 10);
-              line[randomGap] = 0;
-              penaltyLines.push(line);
-          }
-
-          setBoard(prevBoard => {
-              const newBoard = prevBoard.slice(pendingPenaltyLines);
-              return [...newBoard, ...penaltyLines];
-          });
-
-          dispatch(clearPenaltyLines());
+    const handlePlayerLost = ({ playerId }) => {
+      if (playerId === socket.id) {
+        setIsGameOver(true);
       }
-  }, [pendingPenaltyLines]);
-  
+    };
+
+    socket.on('piece:spawn', handlePieceSpawn);
+    socket.on('piece:position-update', handlePieceUpdate);
+    socket.on('piece:locked', handlePieceLocked);
+    socket.on('player:lost', handlePlayerLost);
+
+    return () => {
+      socket.off('piece:spawn', handlePieceSpawn);
+      socket.off('piece:position-update', handlePieceUpdate);
+      socket.off('piece:locked', handlePieceLocked);
+      socket.off('player:lost', handlePlayerLost);
+    };
+  }, []);
+
+  const prevGameStatusRef = useRef(gameStatus);
   useEffect(() => {
-    const handleKeyPress = event => {
-      if (isLocked) return;
-      if (isGameOver) return;
-      if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(event.key)){
+    if (prevGameStatusRef.current !== 'playing' && gameStatus === 'playing') {
+      setBoard(createEmptyBoard());
+      setIsGameOver(false);
+      setPlayingPiece(null);
+      dispatch(clearPenaltyLines());
+    }
+    prevGameStatusRef.current = gameStatus;
+  }, [gameStatus, dispatch]);
+
+  useEffect(() => {
+    if (isGameOver || gameStatus !== 'playing' || !playingPiece) return;
+
+    const keysPressed = new Set();
+    const intervals = {};
+
+    const sendAction = (action) => {
+      socket.emit('input:action', { roomName, action });
+    };
+
+    const handleKeyDown = event => {
+      const key = event.key;
+
+      if (keysPressed.has(key)) return;
+
+      let action = null;
+      let useRepeat = false;
+
+      if (key === 'ArrowLeft') {
+        action = 'left';
+        useRepeat = true;
+      } else if (key === 'ArrowRight') {
+        action = 'right';
+        useRepeat = true;
+      } else if (key === 'ArrowDown') {
+        action = 'down';
+        useRepeat = true;
+      } else if (key === 'ArrowUp') {
+        action = 'rotate';
+        useRepeat = false;
+      } else if (key === ' ') {
+        action = 'hardDrop';
+        useRepeat = false;
+      }
+
+      if (action) {
         event.preventDefault();
-        let newPiece;
-        if (event.key === 'ArrowLeft')
-          newPiece = moveLeft(board, playingPiece);
-        else if (event.key === 'ArrowRight')
-          newPiece = moveRight(board, playingPiece);
-        else if (event.key === 'ArrowDown')
-          newPiece = moveDown(board, playingPiece);
-        else if (event.key === 'ArrowUp')
-          newPiece = rotate(board, playingPiece);
-        if (newPiece)
-          setPlayingPiece(newPiece);
-        if (event.key === ' '){
-          setIsLocked(true);
-          newPiece = hardDrop(board, playingPiece);
-          setPlayingPiece(newPiece);
-          lockIn(newPiece, board);
-          setTimeout(() => {
-            spawnNewPiece();
-            setIsLocked(false);
-          }, 200);
+        keysPressed.add(key);
+
+        sendAction(action);
+
+        if (useRepeat) {
+          const initialTimeout = setTimeout(() => {
+            intervals[key] = setInterval(() => {
+              if (keysPressed.has(key)) {
+                sendAction(action);
+              }
+            }, 10);
+          }, 10);
+
+          intervals[key] = initialTimeout;
         }
       }
     };
-    document.addEventListener('keydown', handleKeyPress);
-    
+
+    const handleKeyUp = event => {
+      const key = event.key;
+      keysPressed.delete(key);
+
+      if (intervals[key]) {
+        clearTimeout(intervals[key]);
+        clearInterval(intervals[key]);
+        delete intervals[key];
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
     return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    }
-  }, [playingPiece, board]);
-  
-  if (!playingPiece){
-    return <div>chargement de la piece...</div>;
-  }
-  
-  const shape = getShape(playingPiece);
-  const displayBoard = placePiece(board, shape, playingPiece.x, playingPiece.y, playingPiece.type);
-  
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+
+      Object.values(intervals).forEach(interval => {
+        clearTimeout(interval);
+        clearInterval(interval);
+      });
+    };
+  }, [playingPiece, isGameOver, gameStatus, roomName]);
+
+  const shape = playingPiece ? getShape(playingPiece) : null;
+  const displayBoard = !playingPiece
+    ? board
+    : placePiece(board, shape, playingPiece.x, playingPiece.y, playingPiece.type);
+
   const handleRestart = () => {
     setBoard(createEmptyBoard());
     setIsGameOver(false);
   }
-  
-  
 
-
-    return(
-      <div style={{ display: 'flex' }}>
-        <div className="board">
-          {displayBoard.map((line, y) => (
-            <div key={y} className="row">
-                {line.map((value, x) => (
-                  <div
-                  key={x}
-                  className="cell"
-                  style={{ backgroundColor: value != 0 ? getPieceColor(value) : '#111' }}
-                  ></div>
-                ))}
-             </div>
-          ))}
-          <div>
-            {isGameOver && (
-              <div className="game-over">
-                <h2>Game Over!</h2>
-                <button onClick={handleRestart}>Restart</button>
-              </div>
-            )}
-          </div>
+  return(
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {playerName && (
+        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '10px', color: '#fff' }}>
+          {playerName}
+        </div>
+      )}
+      <div className="board">
+        {displayBoard.map((line, y) => (
+          <div key={y} className="row">
+              {line.map((value, x) => (
+                <div
+                key={x}
+                className="cell"
+                style={{ backgroundColor: value != 0 ? getPieceColor(value) : '#111' }}
+                ></div>
+              ))}
+           </div>
+        ))}
+        <div>
+          {isGameOver && (
+            <div className="game-over">
+              <h2>Game Over!</h2>
+              <button onClick={handleRestart}>Restart</button>
+            </div>
+          )}
         </div>
       </div>
-    )
+    </div>
+  )
 };
 
 export default Board;
